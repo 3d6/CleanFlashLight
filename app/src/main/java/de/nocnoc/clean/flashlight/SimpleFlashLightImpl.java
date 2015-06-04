@@ -63,12 +63,13 @@ import static java.util.logging.Level.WARNING;
 public class SimpleFlashLightImpl implements SimpleFlashLight {
 
 
-    private static Logger logger = Logger.getLogger(SimpleFlashLightImpl.class.getSimpleName());
+    private static final Logger logger = Logger.getLogger(SimpleFlashLightImpl.class.getSimpleName());
 
     private static SimpleFlashLight instance;
 
     /**
-     * flash switch mode indicator
+     * flash switch state mode indicator.
+     * The indicator is needed, for there is no way to request on sdk or hardware
      */
     private boolean isFlashOn = false;
 
@@ -83,7 +84,7 @@ public class SimpleFlashLightImpl implements SimpleFlashLight {
     private String cameraID;
 
     /**
-     * camera device, while camera is opend.
+     * camera device, while camera is opened.
      * needed for closing actions
      */
     private CameraDevice cameraDevice;
@@ -100,13 +101,16 @@ public class SimpleFlashLightImpl implements SimpleFlashLight {
      */
     private CameraCaptureSession captureSession;
 
-    private SurfaceTexture dummyTexture;
-
     /**
      * preventing the app from closing before the camera shut down
      */
-    private Semaphore cameraOpenCloseLock = new Semaphore(1);
+    private final Semaphore cameraOpenCloseLock = new Semaphore(1);
 
+    /**
+     * Dummy Texture Buffer.
+     * It is a field, for the ability to free after use.
+     */
+    private SurfaceTexture dummyTexture;
 
     /**
      * Whole Capture session (repeating single event)
@@ -139,10 +143,10 @@ public class SimpleFlashLightImpl implements SimpleFlashLight {
             cameraDevice = camera;
 
             try {
-                // Create new builder to manage all settigns manually
+                // Create new builder to manage all settings manually
                 requestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
 
-                // set auto focus to auto as prequesit for the flash
+                // set auto focus to auto as prerequisite for the flash
                 requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
 
                 // set flash mode to torch
@@ -166,15 +170,21 @@ public class SimpleFlashLightImpl implements SimpleFlashLight {
         }
 
         @Override
+        public void onClosed(CameraDevice camera) {
+            dummyTexture.release();
+        }
+
+        @Override
         public void onDisconnected(CameraDevice camera) {
-//            closeCamera();
+            // do nothing. closing device would lead into error at this point
         }
 
         @Override
         public void onError(CameraDevice camera, int error) {
-//            closeCamera();
+            // do nothing. closing device would lead into error at this point
         }
     };
+
 
     private SimpleFlashLightImpl(CameraManager cameraManager) throws CameraAccessException {
 
@@ -314,11 +324,14 @@ public class SimpleFlashLightImpl implements SimpleFlashLight {
 
         if (!isFlashOn()) {
             try {
-                //stopping
+                //stopping old request (restarting is necessary to avoid memory issues)
                 captureSession.stopRepeating();
+
+                // start new request
                 requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH);
                 captureSession.setRepeatingRequest(requestBuilder.build(), null, null);
                 this.isFlashOn = true;
+
             } catch (CameraAccessException e) {
                 logger.log(WARNING, "Failed to enable flash", e);
             }
@@ -333,10 +346,14 @@ public class SimpleFlashLightImpl implements SimpleFlashLight {
 
         if (isFlashOn) {
             try {
+                //stopping old request (restarting is necessary to avoid memory issues)
                 captureSession.stopRepeating();
+
+                // start new request
                 requestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
                 captureSession.setRepeatingRequest(requestBuilder.build(), null, null);
                 this.isFlashOn = false;
+
             } catch (CameraAccessException e) {
                 logger.log(WARNING, "Failed to disable flash", e);
             }
@@ -349,7 +366,7 @@ public class SimpleFlashLightImpl implements SimpleFlashLight {
 
 
     /**
-     * Evaluates the smallest texture buffer size, for we dont want to save it,
+     * Evaluates the smallest texture buffer size, for we do not want to save it,
      * but only need the flashlight.
      *
      * @return size of the smallest needed texture buffer size
@@ -367,7 +384,7 @@ public class SimpleFlashLightImpl implements SimpleFlashLight {
                     "Camera " + cameraID + "does not support any output size.");
         }
 
-        // search for the smallest size
+        // search for the smallest size to safe memory
         Size chosen = outputSizes[0];
         for (Size s : outputSizes) {
             if (chosen.getWidth() >= s.getWidth() && chosen.getHeight() >= s.getHeight()) {

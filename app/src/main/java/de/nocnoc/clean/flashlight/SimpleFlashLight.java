@@ -51,14 +51,14 @@ public interface SimpleFlashLight {
     /**
      * Opens the camera device.
      *
-     * @return true if the device was opened successfull
+     * @return true if the device was opened successfully
      */
     boolean openCamera();
 
     /**
      * Closes the camera device.
      *
-     * @return true if the device was opened successfull
+     * @return true if the device was opened successfully
      */
     boolean closeCamera();
 
@@ -81,7 +81,7 @@ public interface SimpleFlashLight {
     void turnOnFlash();
 
     /**
-     * Turns the flash off. the camera device is needed to be opend.
+     * Turns the flash off. the camera device is needed to be opened.
      */
     void turnOffFlash();
 

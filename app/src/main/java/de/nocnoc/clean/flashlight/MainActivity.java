@@ -50,13 +50,12 @@ import android.widget.Toast;
  */
 public class MainActivity extends Activity {
 
-    private Button flashLightToggle;
     private SimpleFlashLight flashLight;
 
     /**
      * Reacts on button click
      */
-    private View.OnClickListener onClickTogleFlashlight = new View.OnClickListener() {
+    private final View.OnClickListener onClickToggleFlashlight = new View.OnClickListener() {
         public void onClick(View view) {
             flashLight.switchFlash();
         }
@@ -68,19 +67,18 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        this.flashLightToggle = ((Button) findViewById(R.id.toggleLightButton));
+        Button flashLightToggle = ((Button) findViewById(R.id.toggleLightButton));
 
         if (checkHasFlash()) {
             flashLight = SimpleFlashLightImpl.getInstance((CameraManager) getSystemService(Context.CAMERA_SERVICE));
         }
 
-        if (flashLight != null) {
-            flashLight.openCamera(); // opens the camera device.
-            this.flashLightToggle.setEnabled(true);
-            this.flashLightToggle.setOnClickListener(onClickTogleFlashlight);
+        if (flashLight != null && flashLight.openCamera()) {
+            flashLightToggle.setEnabled(true);
+            flashLightToggle.setOnClickListener(onClickToggleFlashlight);
         } else {
-            this.flashLightToggle.setEnabled(false);
-            this.flashLightToggle.setOnClickListener(null);
+            flashLightToggle.setEnabled(false);
+            flashLightToggle.setOnClickListener(null);
             Toast.makeText(this, R.string.flash_device_not_available, Toast.LENGTH_SHORT).show();
         }
 
@@ -121,7 +119,7 @@ public class MainActivity extends Activity {
 
 
     /**
-     * Assure that camera is closed befor leaving the app.
+     * Assure that camera is closed before leaving the app.
      */
     @Override
     protected void onDestroy() {
