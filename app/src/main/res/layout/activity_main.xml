@@ -9,14 +9,14 @@
                 tools:context=".MainActivity">
 
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/toggle_light_title"
         android:id="@+id/toggleLightButton"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="94dp"/>
+        android:scaleType="fitCenter"
+        android:cropToPadding="true"
+        android:background="@mipmap/light_off"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>

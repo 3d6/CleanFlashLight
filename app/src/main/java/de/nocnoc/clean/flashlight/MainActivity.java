@@ -41,6 +41,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 /**
@@ -51,6 +52,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
     private SimpleFlashLight flashLight;
+    private ImageButton flashLightToggle;
 
     /**
      * Reacts on button click
@@ -58,6 +60,7 @@ public class MainActivity extends Activity {
     private final View.OnClickListener onClickToggleFlashlight = new View.OnClickListener() {
         public void onClick(View view) {
             flashLight.switchFlash();
+            indicateFlashState();
         }
     };
 
@@ -67,7 +70,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        Button flashLightToggle = ((Button) findViewById(R.id.toggleLightButton));
+        flashLightToggle = ((ImageButton) findViewById(R.id.toggleLightButton));
 
         if (checkHasFlash()) {
             flashLight = SimpleFlashLightImpl.getInstance((CameraManager) getSystemService(Context.CAMERA_SERVICE));
@@ -82,6 +85,9 @@ public class MainActivity extends Activity {
             Toast.makeText(this, R.string.flash_device_not_available, Toast.LENGTH_SHORT).show();
         }
 
+        // for there is no initial background image and the togle state depends on
+        // the implementation of SimpleFlashLight, the user feedback hast to be set here
+        indicateFlashState();
     }
 
 
@@ -115,6 +121,18 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Gives a feadback for activating or deactivating flashlight
+     */
+    private void indicateFlashState() {
+        if (flashLight.isFlashOn()) {
+            //flashLightToggle.setBackgroundResource(R.drawable.light_on);
+            flashLightToggle.setImageResource(R.mipmap.light_on);
+        } else {
+            flashLightToggle.setImageResource(R.mipmap.light_off);
+        }
     }
 
 

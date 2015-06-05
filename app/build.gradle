@@ -5,11 +5,11 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId "de.nocnoc.clean.flashlight"
+        applicationId "de.nocnoc.clean.cleanlight"
         minSdkVersion 21
         targetSdkVersion 22
-        versionCode 3
-        versionName "0.0.03"
+        versionCode 4
+        versionName "0.0.04"
     }
     buildTypes {
         release {
